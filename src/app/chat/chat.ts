@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgClass } from '@angular/common';
-import { BrokerService } from '../service/broker.service';
+import { BrokerService } from '../shared/services/broker';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [FormsModule, NgFor, NgClass],
+  imports: [FormsModule, NgClass],
   templateUrl: './chat.html',
   styleUrls: ['./chat.css']
 })

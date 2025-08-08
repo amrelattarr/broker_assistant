@@ -1,1 +1,71 @@
-<p>dashboard works!</p>
+<section>
+    <div class="container py-4">
+        <div class="text-center p-4">
+            <h1 class="display-5 fw-bold text-primary">
+                Your Smart Trading Assistant
+            </h1>
+            <p class="fs-5 text-secondary fst-italic mt-3">
+                Helping You Navigate the Market with Confidence
+            </p>
+          </div>
+      <div class="row g-4">
+        <div class="col-12 col-md-6 col-xl-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title text-center">User Types Distribution</h5>
+              <p class="card-text text-center text-muted mb-3">Breakdown of user types registered with the broker.</p>
+              <canvas baseChart
+                      [data]="pieChartData"
+                      [type]="'pie'"
+                      style="width:100%;max-height:300px;"></canvas>
+              <div *ngIf="!pieChartData || !pieChartData.datasets?.length" class="text-danger text-center mt-3">
+                Pie chart data is unavailable.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title text-center">New Registrations Per Month</h5>
+              <p class="card-text text-center text-muted mb-3">Track how many new users register each month.</p>
+              <canvas baseChart
+                      [data]="barChartData"
+                      [type]="'bar'"
+                      style="width:100%;max-height:300px;"></canvas>
+              <div *ngIf="!barChartData || !barChartData.datasets?.length" class="text-danger text-center mt-3">
+                Bar chart data is unavailable.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-xl-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title text-center">Trades Executed Over Time</h5>
+              <p class="card-text text-center text-muted mb-3">Number of trades executed throughout the trading day.</p>
+              <canvas baseChart
+                      [data]="lineChartData"
+                      [type]="'line'"
+                      style="width:100%;max-height:300px;"></canvas>
+              <div *ngIf="!lineChartData || !lineChartData.datasets?.length" class="text-danger text-center mt-3">
+                Line chart data is unavailable.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 mt-4">
+          <div class="card">
+            <div class="card-body">
+              <h2 class="card-title text-center mb-0" style="font-size:2.2rem;font-weight:bold;">Bitcoin Closing Price</h2>
+              <canvas baseChart
+                      [data]="bitcoinLineChartData"
+                      [type]="'line'"
+                      style="width:100%;max-height:400px;">
+              </canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</section>
