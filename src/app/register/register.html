@@ -1,26 +1,61 @@
 <div class="container-fluid background">
-   <div class="register-form">
-     <h2>Register Now!</h2>
-    <form action="register" method="post">
-    <div class="form-group">
+  <div class="form">
+    <h2>Register Now!</h2>
+    <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
         <label for="username">Username:</label>
-        <input type="text" class="form-control" id="username" name="username" required>
-    </div>
-    <div class="form-group">
+        <input type="text" class="form-control" id="username" formControlName="username" required>
+        @if (registrationForm.get('username')?.touched && registrationForm.get('username')?.invalid) {
+          <div class="text-danger">
+            @if (registrationForm.get('username')?.errors?.['required']) {
+              Username is required.
+            }
+            @if (registrationForm.get('username')?.errors?.['pattern']) {
+              Username must be 4-20 letters, numbers, or underscores.
+            }
+          </div>
+        }
+      </div>
+      <div class="form-group">
         <label for="email">Email:</label>
-        <input type="email" class="form-control" id="email" name="email" required>
-    </div>
-    <div class="form-group">
+        <input type="email" class="form-control" id="email" formControlName="email" required>
+        @if (registrationForm.get('email')?.touched && registrationForm.get('email')?.invalid) {
+          <div class="text-danger">
+            @if (registrationForm.get('email')?.errors?.['required']) {
+              Email is required.
+            }
+            @if (registrationForm.get('email')?.errors?.['pattern']) {
+              Enter a valid email address.
+            }
+          </div>
+        }
+      </div>
+      <div class="form-group">
         <label for="password">Password:</label>
-        <input type="password" class="form-control" id="password" name="password" required>
-    </div>
-    <div class="form-group">
+        <input type="password" class="form-control" id="password" formControlName="password" required>
+        @if (registrationForm.get('password')?.touched && registrationForm.get('password')?.invalid) {
+          <div class="text-danger">
+            @if (registrationForm.get('password')?.errors?.['required']) {
+              Password is required.
+            }
+            @if (registrationForm.get('password')?.errors?.['pattern']) {
+              Password must be at least 8 characters, include uppercase, lowercase, number, and special character(@$!%*?&).
+            }
+          </div>
+        }
+      </div>
+      <div class="form-group">
         <label for="confirmPassword">Confirm Password:</label>
-        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Register</button>
-        <p class="text-dark">Do not have an Account <a routerLink="/login" class="fw-bold text-primary">Login</a></p>
+        <input type="password" class="form-control" id="confirmPassword" formControlName="confirmPassword" required>
+        @if (registrationForm.get('confirmPassword')?.touched && registrationForm.hasError('mismatch')) {
+          <div class="text-danger">
+            Passwords do not match.
+          </div>
+        }
+      </div>
+      <button type="submit" class="btn btn-primary" [disabled]="registrationForm.invalid">Register</button>
+      <p class="text-dark">Already have an account? <a routerLink="/login" class="fw-bold text-primary">Login</a></p>
     </form>
-   </div>
+  </div>
 </div>
 
