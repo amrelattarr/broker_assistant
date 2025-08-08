@@ -1,10 +1,97 @@
 body{
-    /* background-image: url("/assets/b718ceb78fc1a3425e961703d6c443a8.jpg");
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    height: 100vh;
+    font-family: 'Palatino', serif;
+    
+}
+.background{
+    padding: 70px 0;
+    width: 100%;
     display: flex;
     justify-content: center;
-    align-items: center; */
+    align-items: center;
+    position: relative;
+    overflow: hidden;
 }
+.form{
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 30px 20px;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px 10px rgba(94, 254, 182, 2);
+    width: 350px;
+    text-align: center;
+}
+.form h2{
+    color: #0d456a;
+    font-size: 2rem;
+    font-weight: bold;
+}
+.form-group{
+    padding: 10px 0;
+}
+label{
+    display: block;
+    text-align: left;
+    color: #0d456a;
+}
+input{
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #5efeb6;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    outline: none; 
+    border-color: #5efeb6; 
+    box-shadow: 0 0 10px 0 rgba(94, 254, 182, 2); 
+}
+.btn{
+    background-color:#0d456a;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+.btn:hover{
+    background-color: #338cc8;
+}
+.form-group {
+  margin-bottom: 1rem;
+}
+.error-message {
+  color: #dc3545;
+  font-size: 0.5rem;
+  min-height: 18px; 
+  display: block;
+}
+.form-control.ng-invalid.ng-touched  {
+  border-color: #dc3545;
+  box-shadow: 0 0 10px 0 rgba(220,53,69, 2); 
+}
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+@media (max-width: 450px) {
+    .form {
+        width: 150px;
+        padding: 30px 15px;
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+        padding: 10px;
+    }
+}
+@media (max-width: 1024px) {
+    .form {
+        padding: 40px 30px;
+        width: 85%;
+        max-width: 500px;
+    }
+}
+
