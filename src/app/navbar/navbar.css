@@ -1,7 +1,7 @@
 .navbar {
   width: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; 
   align-items: center;
   background-color: rgba(0, 0, 0, 0.85);
   color: white;
@@ -10,7 +10,6 @@
   top: 0;
   z-index: 1000;
   backdrop-filter: blur(5px);
-  flex-wrap: wrap;
 }
 
 .logo {
@@ -36,12 +35,18 @@
   color: #0078d7;
 }
 
-/* Responsive hamburger menu */
 .menu-icon {
   display: none;
-  font-size: 26px;
   cursor: pointer;
-  padding: 0 10px;
+}
+
+.menu-icon span {
+  display: block;
+  width: 25px;
+  height: 3px;
+  background-color: white;
+  margin: 5px 0;
+  transition: all 0.3s ease-in-out;
 }
 
 #menu-toggle {
@@ -63,10 +68,6 @@
 
   .menu-icon {
     display: block;
-  }
-
-  .navbar {
-    flex-direction: column;
-    align-items: flex-start;
+    margin-left: auto; 
   }
 }

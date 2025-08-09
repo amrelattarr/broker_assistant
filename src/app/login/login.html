@@ -30,8 +30,12 @@
           </div>
         }
       </div>
-      <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid">Login</button>
+      <button type="submit" class="my-btn" [disabled]="loginForm.invalid">Login</button>
       <p class="text-dark">Don't have an account? <a routerLink="/register" class="fw-bold text-primary">Register</a></p>
     </form>
   </div>
+</div>
+
+<div class="position-fixed bottom-0 end-0 mb-4 me-4 z-3" style="max-width:90vw;">
+  <app-mini-chat></app-mini-chat>
 </div>

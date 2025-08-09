@@ -1,12 +1,14 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule,AbstractControl, ValidationErrors } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { MiniChat } from "../shared/components/mini-chat/mini-chat";
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-register',
-  imports: [RouterLink, ReactiveFormsModule, CommonModule],
+  imports: [RouterLink, ReactiveFormsModule, CommonModule, MiniChat],
   templateUrl: './register.html',
   styleUrls: ['./register.css'],
 })
@@ -42,10 +44,18 @@ export class Register {
 
   onSubmit() {
     if (this.registrationForm.valid) {
-      console.log('Form Submitted', this.registrationForm.value);
-      this.router.navigate(['/home']);
+      Swal.fire({
+        title: 'Success!',
+        text: 'Registration completed successfully.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        this.router.navigate(['/login']);
+      });
     }
   }
+  
+  
 }
 
 

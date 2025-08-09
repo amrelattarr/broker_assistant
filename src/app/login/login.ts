@@ -4,11 +4,14 @@ import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MiniChat } from "../shared/components/mini-chat/mini-chat";
+import Swal from 'sweetalert2';
+
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule , RouterLink, ReactiveFormsModule, CommonModule],
+  imports: [FormsModule, RouterLink, ReactiveFormsModule, CommonModule, MiniChat],
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
@@ -31,11 +34,14 @@ export class Login {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      console.log('Login Form Submitted', this.loginForm.value);
-      this.router.navigate(['/home']);
-    }
-    //  else {
-    //   console.log('Login Info is invalid');
-    // }
+      Swal.fire({
+        title: 'Login Successful!',
+        text: 'Welcome back!',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        this.router.navigate(['/home']);
+      });
+    } 
   }
 }

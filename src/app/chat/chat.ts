@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component , inject} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgFor, NgClass } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { BrokerService } from '../shared/services/broker';
 
 @Component({
@@ -16,7 +16,7 @@ export class Chat {
     { text: "Hello! I’m your Capital Market Broker assistant. How can I help you?", sender: 'bot' }
   ];
 
-  constructor(private brokerService: BrokerService) {}
+  private brokerService = inject(BrokerService);
 
   sendMessage(): void {
     if (!this.userMessage.trim()) return;

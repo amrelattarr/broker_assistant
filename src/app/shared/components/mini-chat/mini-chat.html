@@ -1,0 +1,32 @@
+<div class="chat-float-wrapper">
+    <div class="chat-fab-wrapper">
+      <button *ngIf="!isOpen" class="chat-fab" (click)="openChat()" aria-label="Open chat">
+        <svg width="28" height="28" fill="#fff" viewBox="0 0 24 24">
+          <path d="M12 3C6.477 3 2 6.797 2 11c0 1.692.7 3.293 1.946 4.634-.28 1.01-.891 2.58-1.892 4.002a1 1 0 0 0 1.234 1.488c2.482-.627 4.35-1.535 5.584-2.163A12.7 12.7 0 0 0 12 19c5.523 0 10-3.797 10-8s-4.477-8-10-8z"/>
+        </svg>
+      </button>
+  
+      <div *ngIf="showHint && !isOpen" class="chat-hint">
+        How can I help you?
+      </div>
+    </div>
+  
+    <div *ngIf="isOpen" class="chat-container">
+      <div class="chat-header">
+        Capital Market Broker Chatbot
+        <button class="chat-close-btn" (click)="closeChat()" aria-label="Close chat">&times;</button>
+      </div>
+      <div class="chat-messages" #messagesContainer>
+        @for (msg of messages; track msg) {
+          <div [ngClass]="{'user-message': msg.from === 'user', 'bot-message': msg.from === 'bot'}">
+            <span>{{ msg.text }}</span>
+          </div>
+        }
+      </div>
+      <form class="chat-input-row" (ngSubmit)="sendMessage()">
+        <input [(ngModel)]="userInput" name="chatInput" class="chat-input" placeholder="Type your message..." autocomplete="off" required />
+        <button type="submit" class="chat-send-btn">Send</button>
+      </form>
+    </div>
+  </div>
+  

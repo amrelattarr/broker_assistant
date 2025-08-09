@@ -1,12 +1,22 @@
 <nav class="navbar">
-  <div class="logo">CapitalConnect</div>
+  <div class="logo text-white">CapitalConnect</div>
 
   <input type="checkbox" id="menu-toggle" />
-  <label for="menu-toggle" class="menu-icon"></label>
+  <label for="menu-toggle" class="menu-icon ms-auto">
+    <span></span>
+    <span></span>
+    <span></span>
+  </label>
 
   <ul class="nav-links">
-    <li><a routerLink="home">Home</a></li>
-    <li><a routerLink="chat">Chat</a></li>
-    <li><a href="#">About</a></li>
+    @if (!hideButton()) {
+      <li class="pt-2"><a routerLink="home">Home</a></li>
+    }
+    @if (!hideButton()) {
+      <li class="pt-2"><a routerLink="chat">ChatBot</a></li>
+    }
+    @if (!hideButton()) {
+      <li><button class="btn btn-danger" routerLink="login">Logout</button></li>
+    }
   </ul>
 </nav>

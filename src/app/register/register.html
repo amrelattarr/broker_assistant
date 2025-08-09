@@ -53,9 +53,14 @@
           </div>
         }
       </div>
-      <button type="submit" class="btn btn-primary" [disabled]="registrationForm.invalid">Register</button>
+      <button type="submit" class="my-btn" [disabled]="registrationForm.invalid">Register</button>
       <p class="text-dark">Already have an account? <a routerLink="/login" class="fw-bold text-primary">Login</a></p>
     </form>
   </div>
+</div>
+
+
+<div class="position-fixed bottom-0 end-0 mb-4 me-4 z-3" style="max-width:90vw;">
+  <app-mini-chat></app-mini-chat>
 </div>
 
