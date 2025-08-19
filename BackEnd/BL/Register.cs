@@ -15,11 +15,11 @@ namespace BackEnd.BL
             _context = context;
         }
 
-        public async Task<User> RegisterUserAsync(RegisterDto dto)
+        public async Task<RegisterResult> RegisterUserAsync(RegisterDto dto)
         {
             if (dto == null)
             {
-                throw new ArgumentNullException(nameof(dto), "User registration data is null.");
+                return new RegisterResult { Success = false, ErrorMessage = "User registration data is null." };
             }
 
             var hasher = new PasswordHasher<User>();
@@ -33,7 +33,20 @@ namespace BackEnd.BL
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return user;
+            return new RegisterResult 
+            { 
+                Success = true, 
+                User = user,
+                Message = "Registration successful"
+            };
         }
+    }
+
+    public class RegisterResult
+    {
+        public bool Success { get; set; }
+        public string? ErrorMessage { get; set; }
+        public string? Message { get; set; }
+        public User? User { get; set; }
     }
 }

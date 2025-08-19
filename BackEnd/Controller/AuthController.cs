@@ -24,40 +24,19 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(BackEnd.DTOs.RegisterDto dto)
     {
-        try
-        {
-            var user = await _registerService.RegisterUserAsync(dto);
-            return CreatedAtAction(nameof(Register), new { id = user.Id }, user);
-        }
-        catch (ArgumentNullException)
-        {
-            return BadRequest("User is null.");
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Internal server error: {ex.Message}");
-        }
+        var result = await _registerService.RegisterUserAsync(dto);
+        if (!result.Success)
+            throw new ArgumentNullException(result.ErrorMessage);
+        return CreatedAtAction(nameof(Register), new { id = result.User.Id }, result.User);
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(BackEnd.DTOs.LoginDto dto)
+    public async Task<IActionResult> Login(LoginDto dto)
     {
-        try
-        {
-            var result = await _loginService.LoginUserAsync(dto);
-            if (result.Success)
-            {
-                return Ok(new { message = result.Message, result.User?.Id, result.User?.Username, result.User?.Email });
-            }
-            return Unauthorized(result.ErrorMessage);
-        }
-        catch (ArgumentNullException)
-        {
-            return BadRequest("Login data is null.");
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Internal server error: {ex.Message}");
-        }
+        var result = await _loginService.LoginUserAsync(dto);
+        if (!result.Success)
+            throw new UnauthorizedAccessException(result.ErrorMessage); 
+        return Ok(result);
     }
+
 }

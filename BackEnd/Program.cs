@@ -60,10 +60,14 @@ public class Startup
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        if (env.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-        }
+        // ErrorHandlerMiddleware must be first to catch all exceptions
+        app.UseMiddleware<ErrorHandlerMiddleware>();
+        
+        // Commented out to allow ErrorHandlerMiddleware to handle exceptions
+        // if (env.IsDevelopment())
+        // {
+        //     app.UseDeveloperExceptionPage();
+        // }
 
         // Strict CORS enforcement middleware
         app.Use(async (context, next) =>
