@@ -1,41 +1,98 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using BackEnd.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
+using Microsoft.OpenApi.Models;
+using BackEnd.BL;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("BrokerContext")
-    )
-);
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+public class Program
 {
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    public static void Main(string[] args)
+    {
+        CreateHostBuilder(args).Build().Run();
+    }
+
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+            });
 }
 
-app.UseHttpsRedirection();
+public class Startup
+{
+    private readonly IConfiguration _configuration;
 
-app.UseRouting();
+    public Startup(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
 
-app.UseAuthorization();
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseSqlServer(_configuration.GetConnectionString("BrokerContext")));
 
-app.MapStaticAssets();
-app.MapRazorPages()
-   .WithStaticAssets();
+        // Register BL services
+        services.AddScoped<Register>();
+        services.AddScoped<Login>();
 
-//app.MapControllerRoute(
-//    name: "default",
-//    pattern: "{controller=Home}/{action=Index}/{id?}");
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowSpecificOrigin",
+                builder =>
+                {
+                    builder.WithOrigins("http://localhost:4200") // Strictly allow only this origin
+                           .AllowAnyHeader()
+                           .AllowAnyMethod();
+                });
+        });
 
-app.Run();
+        services.AddControllers();
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });
+        });
+    }
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+
+        // Strict CORS enforcement middleware
+        app.Use(async (context, next) =>
+        {
+            var origin = context.Request.Headers["Origin"].ToString();
+            if (!string.IsNullOrEmpty(origin) && origin != "http://localhost:4200")
+            {
+                context.Response.StatusCode = 403;
+                await context.Response.WriteAsync("CORS policy does not allow this origin.");
+                return;
+            }
+            await next();
+        });
+
+        app.UseRouting();
+
+        app.UseCors("AllowSpecificOrigin"); // Apply the CORS policy
+
+        app.UseAuthorization();
+        app.UseSwagger();
+        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API v1"));
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+            endpoints.MapGet("/", context => {
+                context.Response.Redirect("/swagger");
+                return Task.CompletedTask;
+            });
+        });
+    }
+}
