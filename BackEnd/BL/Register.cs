@@ -3,6 +3,7 @@ using BackEnd.Models;
 using BackEnd.DTOs;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.BL
 {
@@ -22,11 +23,20 @@ namespace BackEnd.BL
                 return new RegisterResult { Success = false, ErrorMessage = "User registration data is null." };
             }
 
+            // Normalize email and check uniqueness (case-insensitive)
+            var normalizedEmail = dto.Email?.Trim();
+            var emailExists = !string.IsNullOrEmpty(normalizedEmail) &&
+                              await _context.Users.AnyAsync(u => u.Email != null && u.Email.ToLower() == normalizedEmail.ToLower());
+            if (emailExists)
+            {
+                return new RegisterResult { Success = false, ErrorMessage = "Email already exists." };
+            }
+
             var hasher = new PasswordHasher<User>();
             var user = new User
             {
                 Username = dto.Username,
-                Email = dto.Email
+                Email = normalizedEmail
             };
             user.Password = hasher.HashPassword(user, dto.Password);
 

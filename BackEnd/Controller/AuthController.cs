@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BackEnd.DTOs;
 using Microsoft.EntityFrameworkCore;
 using BackEnd.BL;
+using Microsoft.AspNetCore.Authorization;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -22,15 +23,18 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
+    [AllowAnonymous]
     public async Task<IActionResult> Register(BackEnd.DTOs.RegisterDto dto)
     {
         var result = await _registerService.RegisterUserAsync(dto);
         if (!result.Success)
-            throw new ArgumentNullException(result.ErrorMessage);
-        return CreatedAtAction(nameof(Register), new { id = result.User.Id }, result.User);
+            return BadRequest(new { error = result.ErrorMessage });
+        // Return the created user including the hashed password as requested
+        return CreatedAtAction(nameof(Register), new { id = result.User!.Id }, result.User);
     }
 
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login(LoginDto dto)
     {
         var result = await _loginService.LoginUserAsync(dto);

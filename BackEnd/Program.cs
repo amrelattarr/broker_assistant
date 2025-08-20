@@ -6,6 +6,12 @@ using BackEnd.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using BackEnd.BL;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using System.Security.Cryptography;
 
 public class Program
 {
@@ -39,6 +45,7 @@ public class Startup
         // Register BL services
         services.AddScoped<Register>();
         services.AddScoped<Login>();
+        services.AddSingleton<ITokenService, TokenService>();
 
         services.AddCors(options =>
         {
@@ -51,10 +58,49 @@ public class Startup
                 });
         });
 
-        services.AddControllers();
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = _configuration["Jwt:Issuer"],
+                ValidAudience = _configuration["Jwt:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(SHA256.HashData(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? string.Empty)))
+            };
+        });
+
+        services.AddAuthorization();
+
+        services.AddControllers(options =>
+        {
+            var policy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+            options.Filters.Add(new AuthorizeFilter(policy));
+        });
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });
+            // Swagger JWT support
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT"
+            });
+            // Require auth for protected operations; [AllowAnonymous] will remain unlocked
+            c.OperationFilter<BackEnd.Swagger.AuthorizeCheckOperationFilter>();
         });
     }
 
@@ -62,30 +108,17 @@ public class Startup
     {
         // ErrorHandlerMiddleware must be first to catch all exceptions
         app.UseMiddleware<ErrorHandlerMiddleware>();
-        
+
         // Commented out to allow ErrorHandlerMiddleware to handle exceptions
         // if (env.IsDevelopment())
         // {
         //     app.UseDeveloperExceptionPage();
         // }
 
-        // Strict CORS enforcement middleware
-        app.Use(async (context, next) =>
-        {
-            var origin = context.Request.Headers["Origin"].ToString();
-            if (!string.IsNullOrEmpty(origin) && origin != "http://localhost:4200")
-            {
-                context.Response.StatusCode = 403;
-                await context.Response.WriteAsync("CORS policy does not allow this origin.");
-                return;
-            }
-            await next();
-        });
-
         app.UseRouting();
 
-        app.UseCors("AllowSpecificOrigin"); // Apply the CORS policy
 
+        app.UseAuthentication();
         app.UseAuthorization();
         app.UseSwagger();
         app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API v1"));

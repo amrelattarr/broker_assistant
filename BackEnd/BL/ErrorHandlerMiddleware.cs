@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BackEnd.BL
 {
@@ -54,6 +55,12 @@ namespace BackEnd.BL
                     _logger.LogError(ex, "Unauthorized");
                     context.Response.StatusCode = 401;
                     await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new { error = ex.Message }));
+                    break;
+
+                case SecurityTokenException ex:
+                    _logger.LogError(ex, "Invalid token");
+                    context.Response.StatusCode = 401;
+                    await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new { error = "Invalid or expired token." }));
                     break;
 
                 default:

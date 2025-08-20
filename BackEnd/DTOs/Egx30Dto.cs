@@ -1,3 +1,5 @@
+using BackEnd.Models;
+
 namespace BackEnd.DTOs
 {
     public class Egx30Dto
@@ -7,9 +9,15 @@ namespace BackEnd.DTOs
         public DateTime BorsaDate { get; set; }
         public double IndexValue { get; set; }
 
-        public static implicit operator Egx30Dto(Egx30Dto v)
+        public static implicit operator Egx30Dto(Egx30 v)
         {
-            throw new NotImplementedException();
+            return new Egx30Dto
+            {
+                EgxId = v.EgxId,
+                Time = v.Time,
+                BorsaDate = v.BorsaDate,
+                IndexValue = (double)v.IndexValue
+            };
         }
     }
 }

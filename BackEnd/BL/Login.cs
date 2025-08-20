@@ -10,10 +10,12 @@ namespace BackEnd.BL
     public class Login
     {
         private readonly AppDbContext _context;
+        private readonly ITokenService _tokenService;
 
-        public Login(AppDbContext context)
+        public Login(AppDbContext context, ITokenService tokenService)
         {
             _context = context;
+            _tokenService = tokenService;
         }
 
         public async Task<LoginResult> LoginUserAsync(LoginDto dto)
@@ -23,7 +25,15 @@ namespace BackEnd.BL
                 return new LoginResult { Success = false, ErrorMessage = "Login data is null." };
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == dto.Username);
+            var identifier = dto.Username?.Trim();
+            if (string.IsNullOrWhiteSpace(identifier) || string.IsNullOrWhiteSpace(dto.Password))
+            {
+                return new LoginResult { Success = false, ErrorMessage = "Invalid username or password." };
+            }
+
+            var identifierLower = identifier.ToLower();
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.Username == identifier || (u.Email != null && u.Email.ToLower() == identifierLower));
             if (user == null)
             {
                 return new LoginResult { Success = false, ErrorMessage = "Invalid username or password." };
@@ -36,11 +46,14 @@ namespace BackEnd.BL
                 return new LoginResult { Success = false, ErrorMessage = "Invalid username or password." };
             }
 
+            var token = _tokenService.GenerateToken(user);
+
             return new LoginResult 
             { 
                 Success = true, 
                 User = user,
-                Message = "Login successful"
+                Message = "Login successful",
+                Token = token
             };
         }
     }
@@ -51,5 +64,6 @@ namespace BackEnd.BL
         public string? ErrorMessage { get; set; }
         public string? Message { get; set; }
         public User? User { get; set; }
+        public string? Token { get; set; }
     }
 }
