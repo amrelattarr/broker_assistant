@@ -1,5 +1,6 @@
 ﻿using BackEnd.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BackEnd.Data
 {
@@ -21,6 +22,15 @@ namespace BackEnd.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            var timeSpanToDateTimeConverter = new ValueConverter<TimeSpan, DateTime>(
+                v => new DateTime(1, 1, 1).Add(v),
+                v => v.TimeOfDay);
+
+            modelBuilder.Entity<Egx30>()
+                .Property(e => e.Time)
+                .HasConversion(timeSpanToDateTimeConverter)
+                .HasColumnType("datetime2");
 
             // BuySellInvest composite key
             modelBuilder.Entity<Buy_Sell_Invest>()

@@ -119,7 +119,7 @@ namespace BackEnd.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(new { message = "Updated successfully", id = egx30.EgxId });
         }
 
         [HttpDelete("{id}")]
@@ -134,7 +134,7 @@ namespace BackEnd.Controllers
             _context.Egx30s.Remove(egx30);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new { message = "Deleted successfully", id = id });
         }
 
         private bool Egx30Exists(int id)
