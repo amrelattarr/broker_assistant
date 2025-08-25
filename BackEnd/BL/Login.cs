@@ -25,7 +25,7 @@ namespace BackEnd.BL
                 return new LoginResult { Success = false, ErrorMessage = "Login data is null." };
             }
 
-            var identifier = dto.Username?.Trim();
+            var identifier = dto.email?.Trim();
             if (string.IsNullOrWhiteSpace(identifier) || string.IsNullOrWhiteSpace(dto.Password))
             {
                 return new LoginResult { Success = false, ErrorMessage = "Invalid username or password." };
