@@ -52,7 +52,7 @@ public class Startup
             options.AddPolicy("AllowSpecificOrigin",
                 builder =>
                 {
-                    builder.WithOrigins("http://localhost:4200") // Strictly allow only this origin
+                    builder.WithOrigins("http://localhost:4200")
                            .AllowAnyHeader()
                            .AllowAnyMethod();
                 });
@@ -116,7 +116,7 @@ public class Startup
         // }
 
         app.UseRouting();
-
+        app.UseCors("AllowSpecificOrigin");
 
         app.UseAuthentication();
         app.UseAuthorization();
