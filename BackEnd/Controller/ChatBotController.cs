@@ -1,9 +1,10 @@
-using BackEnd.Data;
+﻿using BackEnd.Data;
 using BackEnd.DTOs;
 using BackEnd.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
- 
+using System.Text;
+using System.Text.Json;
 
 namespace BackEnd.Controllers
 {
@@ -12,27 +13,168 @@ namespace BackEnd.Controllers
     public class ChatBotController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IConfiguration _config;
+        private readonly HttpClient _httpClient;
 
-        public ChatBotController(AppDbContext context)
+        public ChatBotController(AppDbContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;
+            _httpClient = new HttpClient();
         }
 
-        /// GET /api/ChatBot/ask?message=hello
         [HttpGet("ask")]
         public async Task<IActionResult> Ask([FromQuery] string message)
         {
             if (string.IsNullOrWhiteSpace(message))
-                return BadRequest("Message cannot be empty.");
+                return BadRequest(new { error = "Message cannot be empty." });
 
-            // Placeholder reply to avoid external dependencies
-            var reply = $"You said: {message}";
+            var apiKey = _config["OpenAI:ApiKey"];
+            if (string.IsNullOrEmpty(apiKey))
+                return StatusCode(500, new { error = "OpenAI API key not configured in appsettings.json" });
 
-            return Ok(new { question = message, answer = reply });
+            string dbReference = null;
+            string advice = null;
+
+            try
+            {
+                // =============================
+                // 1. Load all stocks into memory
+                // =============================
+                var stocks = await _context.Stocks.AsNoTracking().ToListAsync();
+                var lowerMessage = message.ToLower();
+
+                var stock = stocks.FirstOrDefault(s =>
+                    (!string.IsNullOrEmpty(s.EnglishName) && lowerMessage.Contains(s.EnglishName.ToLower())) ||
+                    (!string.IsNullOrEmpty(s.Symbol) && lowerMessage.Contains(s.Symbol.ToLower())));
+
+                if (stock != null)
+                {
+                    dbReference = $"Stock Info: {stock.EnglishName} ({stock.Symbol}) " +
+                                  $"Current Value: {stock.Value}, Open: {stock.Open}, Close: {stock.Close}, Change: {stock.Change}.";
+
+                    // Advice based on change %
+                    if (stock.Change > 0.5m)
+                        advice = $"📈 The stock {stock.EnglishName} ({stock.Symbol}) is trending up. Consider buying.";
+                    else if (stock.Change < -0.5m)
+                        advice = $"📉 The stock {stock.EnglishName} ({stock.Symbol}) is falling. You may consider selling.";
+                    else
+                        advice = $"⏳ The stock {stock.EnglishName} ({stock.Symbol}) is stable. Holding/waiting could be wise.";
+                }
+
+                // =============================
+                // 2. If EGX is mentioned, get latest index
+                // =============================
+                if (dbReference == null && lowerMessage.Contains("egx"))
+                {
+                    var latestIndex = await _context.Egx30s
+                        .OrderByDescending(e => e.BorsaDate)
+                        .ThenByDescending(e => e.Time)
+                        .FirstOrDefaultAsync();
+
+                    if (latestIndex != null)
+                    {
+                        dbReference = $"EGX30 Info: On {latestIndex.BorsaDate:yyyy-MM-dd} at {latestIndex.Time}, " +
+                                      $"the index value was {latestIndex.IndexValue}.";
+
+                        // Compare with previous record to generate advice
+                        var prevIndex = await _context.Egx30s
+                            .Where(e => e.BorsaDate < latestIndex.BorsaDate ||
+                                        (e.BorsaDate == latestIndex.BorsaDate && e.Time != latestIndex.Time))
+                            .OrderByDescending(e => e.BorsaDate)
+                            .ThenByDescending(e => e.Time)
+                            .FirstOrDefaultAsync();
+
+                        if (prevIndex != null)
+                        {
+                            if (latestIndex.IndexValue > prevIndex.IndexValue)
+                                advice = "📈 The EGX30 index is rising. Market sentiment is positive, consider buying or holding.";
+                            else if (latestIndex.IndexValue < prevIndex.IndexValue)
+                                advice = "📉 The EGX30 index is falling. Market sentiment is bearish, selling or reducing exposure may be wise.";
+                            else
+                                advice = "⏳ The EGX30 index is stable. Holding/waiting could be a good choice.";
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Database query failed", details = ex.Message });
+            }
+
+            // =============================
+            // 3. Build OpenAI request
+            // =============================
+            var messages = new List<object>
+            {
+                new { role = "system", content = "You are a helpful assistant for Egyptian stock market queries." },
+                new { role = "user", content = message }
+            };
+
+            if (dbReference != null)
+            {
+                messages.Insert(1, new { role = "system", content = $"Here is reference data from the Broker database: {dbReference}" });
+            }
+            if (advice != null)
+            {
+                messages.Insert(2, new { role = "system", content = $"Here is trading advice based on database data: {advice}" });
+            }
+
+            var body = new
+            {
+                model = "gpt-4o-mini",
+                messages = messages
+            };
+
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+            try
+            {
+                var content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync("https://api.openai.com/v1/chat/completions", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return StatusCode((int)response.StatusCode, new
+                    {
+                        error = "OpenAI API call failed",
+                        details = await response.Content.ReadAsStringAsync()
+                    });
+                }
+
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+                using var doc = await JsonDocument.ParseAsync(responseStream);
+
+                string reply = "";
+
+                try
+                {
+                    reply = doc.RootElement
+                        .GetProperty("choices")[0]
+                        .GetProperty("message")
+                        .GetProperty("content")
+                        .GetString();
+                }
+                catch
+                {
+                    return StatusCode(500, new { error = "Failed to parse OpenAI response", raw = doc.RootElement.ToString() });
+                }
+
+                return Ok(new
+                {
+                    question = message,
+                    referenceUsed = dbReference,
+                    adviceGiven = advice,
+                    answer = reply
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Failed to process OpenAI response", details = ex.Message });
+            }
         }
 
-        /// POST /api/ChatBot
-        /// Body: { "msgText": "hi" }
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ChatBotCreateDto dto)
         {
@@ -51,7 +193,6 @@ namespace BackEnd.Controllers
             return CreatedAtAction(nameof(GetById), new { id = message.MsgId }, message);
         }
 
-        /// GET /api/ChatBot/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -60,7 +201,6 @@ namespace BackEnd.Controllers
             return Ok(msg);
         }
 
-        /// DELETE /api/ChatBot/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -71,8 +211,5 @@ namespace BackEnd.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { message = "Deleted successfully", id = id });
         }
-
     }
 }
-
-
