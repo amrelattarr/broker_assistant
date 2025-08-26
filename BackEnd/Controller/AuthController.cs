@@ -37,10 +37,17 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Login(LoginDto dto)
     {
-        var result = await _loginService.LoginUserAsync(dto);
-        if (!result.Success)
-            throw new UnauthorizedAccessException(result.ErrorMessage); 
-        return Ok(result);
+        try
+        {
+            var result = await _loginService.LoginUserAsync(dto);
+            if (!result.Success)
+                return Unauthorized(new { error = result.ErrorMessage });
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An unexpected error occurred during login." });
+        }
     }
 
 }
