@@ -36,7 +36,8 @@ namespace BackEnd.BL
             var user = new User
             {
                 Username = dto.Username,
-                Email = normalizedEmail
+                Email = normalizedEmail,
+                Balance = 1000
             };
             user.Password = hasher.HashPassword(user, dto.Password);
 

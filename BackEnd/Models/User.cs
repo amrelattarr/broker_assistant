@@ -10,6 +10,8 @@ namespace BackEnd.Models
         public string? Email { get; set; }
         public string? Password { get; set; }
 
+        public int? Balance { get; set; }
+
         //relationships
         public ICollection<Buy_Sell_Invest>? BuySellInvests { get; set; }
         public ICollection<SendMessage>? SendMessages { get; set; }

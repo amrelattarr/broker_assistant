@@ -48,9 +48,15 @@ namespace BackEnd.Controllers
             if (dto == null) return BadRequest("Invalid payload");
 
             // Ensure user and stock exist (optional simple checks)
-            var userExists = await _context.Users.AnyAsync(u => u.Id == dto.UserId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == dto.UserId);
             var stockExists = await _context.Stocks.AnyAsync(s => s.StockId == dto.StockId);
-            if (!userExists || !stockExists) return NotFound("User or Stock not found");
+            if (user == null || !stockExists) return NotFound("User or Stock not found");
+
+            // Balance check
+            if ((user.Balance ?? 0) < dto.BuyPrice)
+            {
+                return BadRequest("Insufficient balance");
+            }
 
             var entity = await _context.BuySellInvests.FindAsync(dto.UserId, dto.StockId);
             if (entity == null)
@@ -73,6 +79,9 @@ namespace BackEnd.Controllers
                 entity.changeAmount = 0;
             }
 
+            // Deduct balance
+            user.Balance = (user.Balance ?? 0) - dto.BuyPrice;
+
             await _context.SaveChangesAsync();
             return Ok(new { message = "Bought successfully", userId = dto.UserId, stockId = dto.StockId, buyPrice = dto.BuyPrice });
         }
@@ -91,6 +100,13 @@ namespace BackEnd.Controllers
 
             entity.sellPrice = dto.SellPrice;
             entity.changeAmount = dto.SellPrice - entity.buyPrice;
+
+            // Increase user balance
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == dto.UserId);
+            if (user != null)
+            {
+                user.Balance = (user.Balance ?? 0) + dto.SellPrice;
+            }
 
             await _context.SaveChangesAsync();
             return Ok(new { message = "Sold successfully", userId = dto.UserId, stockId = dto.StockId, sellPrice = dto.SellPrice, changeAmount = entity.changeAmount });

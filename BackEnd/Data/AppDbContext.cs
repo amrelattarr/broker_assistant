@@ -67,6 +67,11 @@ namespace BackEnd.Data
                 .HasOne(i => i.Chatbot)
                 .WithMany(c => c.Infos)
                 .HasForeignKey(i => i.MsgId);
+
+            // Default balance for users
+            modelBuilder.Entity<User>()
+                .Property(u => u.Balance)
+                .HasDefaultValue(1000);
         }
 
     }
