@@ -1,0 +1,31 @@
+<div class="container mt-5">
+    <h2 class="text-center">All Stocks</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>English Name</th>
+          <th>Value</th>
+          <th>Symbol</th>
+          <th>Open</th>
+          <th>Close</th>
+          <th>Change</th>
+          <th>Buy</th>
+          <th>Sell</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (stock of stockList; track $index) {
+            <tr>
+                <td>{{ stock.englishName }}</td>
+                <td>{{ stock.value }}</td>
+                <td>{{ stock.symbol }}</td>
+                <td>{{ stock.open }}</td>
+                <td>{{ stock.close }}</td>
+                <td>{{ stock.change }}</td>
+                <td><button class="btn btn-success">Buy</button></td>
+                <td><button class="btn btn-danger">Sell</button></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+  </div>

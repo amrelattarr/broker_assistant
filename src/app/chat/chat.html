@@ -1,17 +1,53 @@
 <div class="chat-container">
-  <div class="messages">
-    @for (msg of messages; track msg) {
+  <!-- <div class="chat-header">
+    <h2>Capital Market Assistant</h2>
+    <p>Ask me anything about stocks, investments, or market trends</p>
+  </div> -->
+  
+  <div class="messages" #messagesContainer>
+    @for (msg of messages; track $index) {
       <div class="message" [ngClass]="msg.sender">
-        {{ msg.text }}
+        <div class="message-content">
+          @if (msg.sender === 'bot') {
+            <div class="bot-avatar">🤖</div>
+          } @else {
+            <div class="user-avatar">👤</div>
+          }
+          <div class="message-text">
+            {{ msg.text }}
+          </div>
+        </div>
       </div>
-    }    
+    }
+    
+    @if (isLoading) {
+      <div class="message bot">
+        <div class="message-content">
+          <div class="bot-avatar">🤖</div>
+          <div class="message-text">
+            <div class="typing-indicator">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   </div>
 
-  <div class="input-container">
+  <div class="input-container fixed-bottom">
     <input type="text"
            [(ngModel)]="userMessage"
-           placeholder="Type a message..."
-           (keyup.enter)="sendMessage()" />
-    <button (click)="sendMessage()">Send</button>
+           [disabled]="isLoading"
+           placeholder="Ask me about stocks, investments, or market trends..."
+           (keyup.enter)="!isLoading && sendMessage()" />
+    <button (click)="sendMessage()" [disabled]="!userMessage.trim() || isLoading">
+      @if (isLoading) {
+        <span class="spinner"></span>
+      } @else {
+        <span>Send</span>
+      }
+    </button>
   </div>
 </div>

@@ -1,4 +1,4 @@
-<div class="chat-float-wrapper">
+<!-- <div class="chat-float-wrapper">
     <div class="chat-fab-wrapper">
       <button *ngIf="!isOpen" class="chat-fab" (click)="openChat()" aria-label="Open chat">
         <svg width="28" height="28" fill="#fff" viewBox="0 0 24 24">
@@ -19,14 +19,52 @@
       <div class="chat-messages" #messagesContainer>
         @for (msg of messages; track msg) {
           <div [ngClass]="{'user-message': msg.from === 'user', 'bot-message': msg.from === 'bot'}">
-            <span>{{ msg.text }}</span>
+            @if (msg.from === 'bot') {
+              <div class="message-avatar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                  <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+                </svg>
+              </div>
+            }
+            <div class="message-content">
+              <span [innerHTML]="msg.text"></span>
+            </div>
+          </div>
+        }
+        @if (isLoading) {
+          <div class="bot-message">
+            <div class="message-avatar">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+              </svg>
+            </div>
+            <div class="message-content">
+              <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
           </div>
         }
       </div>
-      <form class="chat-input-row" (ngSubmit)="sendMessage()">
-        <input [(ngModel)]="userInput" name="chatInput" class="chat-input" placeholder="Type your message..." autocomplete="off" required />
-        <button type="submit" class="chat-send-btn">Send</button>
+      <form class="chat-input-row" (ngSubmit)="sendMessage()" [class.loading]="isLoading">
+        <input 
+          [(ngModel)]="userInput" 
+          name="chatInput" 
+          class="chat-input" 
+          placeholder="Type your message..." 
+          autocomplete="off" 
+          [disabled]="isLoading"
+          required 
+        />
+        <button type="submit" class="chat-send-btn" [disabled]="isLoading">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
       </form>
     </div>
-  </div>
-  
+  </div> -->

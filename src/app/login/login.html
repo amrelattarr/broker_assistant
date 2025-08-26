@@ -3,15 +3,15 @@
     <h2>LogIn</h2>
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
-        <label for="username">Username:</label>
-        <input type="text" class="form-control" id="username" formControlName="username" required>
-        @if (loginForm.get('username')?.touched && loginForm.get('username')?.invalid) {
+        <label for="email">Email:</label>
+        <input type="email" class="form-control" id="email" formControlName="email" required>
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.invalid) {
           <div class="text-danger">
-            @if (loginForm.get('username')?.errors?.['required']) {
-              Username is required.
+            @if (loginForm.get('email')?.errors?.['required']) {
+              Email is required.
             }
-            @if (loginForm.get('username')?.errors?.['pattern']) {
-              Username must be 4-20 letters, numbers, or underscores.
+            @if (loginForm.get('email')?.errors?.['pattern']) {
+              Enter a valid email address.
             }
           </div>
         }

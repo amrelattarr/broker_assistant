@@ -23,6 +23,14 @@ export class Navbar {
   hideButton() {
     return this.currentPath === '/login' || this.currentPath === '/register' || this.currentPath === '/';
   }
+
+  logout() {
+    try {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+    } catch {}
+    this.router.navigate(['/login']);
+  }
 }
 
 

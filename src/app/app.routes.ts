@@ -4,13 +4,17 @@ import { Register } from './register/register';
 import { Chat } from './chat/chat';
 import { Dashboard } from './dashboard/dashboard';
 import { NotFound } from './not-found/not-found';
+import { authGuard } from './shared/guards/auth.guard';
+import { guestGuard } from './shared/guards/guest.guard';
+import { Stocks } from './stocks/stocks';
 
 export const routes: Routes = [
-    {path:'' , component:Login},
-    {path:'login' , component:Login},
-    {path:'register' , component:Register},
-    {path:'home' , component:Dashboard},
-    {path:'chat' , component:Chat},
+    {path:'' , component:Login, canActivate:[guestGuard]},
+    {path:'login' , component:Login, canActivate:[guestGuard]},
+    {path:'register' , component:Register, canActivate:[guestGuard]},
+    {path:'home' , component:Dashboard, canActivate:[authGuard]},
+    {path:'chat' , component:Chat, canActivate:[authGuard]},
+    {path:'stocks', component:Stocks, canActivate:[authGuard]},
     {path:'**' , component:NotFound}
     
 ];

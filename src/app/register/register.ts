@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { CommonModule } from '@angular/common';
 import { MiniChat } from "../shared/components/mini-chat/mini-chat";
 import Swal from 'sweetalert2';
+import { AuthService } from "../shared/services/auth.service";
 
 @Component({
   selector: 'app-register',
@@ -15,7 +16,7 @@ import Swal from 'sweetalert2';
 export class Register {
  registrationForm!: FormGroup;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(private fb: FormBuilder, private router: Router, private auth: AuthService) {
     this.createForm();
   }
 
@@ -43,16 +44,31 @@ export class Register {
   }
 
   onSubmit() {
-    if (this.registrationForm.valid) {
-      Swal.fire({
-        title: 'Success!',
-        text: 'Registration completed successfully.',
-        icon: 'success',
-        confirmButtonText: 'OK'
-      }).then(() => {
-        this.router.navigate(['/login']);
-      });
+    if (this.registrationForm.invalid) {
+      return;
     }
+
+    const { username, email, password } = this.registrationForm.value;
+
+    this.auth.register({ username, email, password }).subscribe({
+      next: () => {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Registration completed successfully.',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        }).then(() => this.router.navigate(['/login']));
+      },
+      error: (err) => {
+        const message = err?.error?.message || 'Registration failed. Please try again.';
+        Swal.fire({
+          title: 'Error',
+          text: message,
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
+    });
   }
   
   
