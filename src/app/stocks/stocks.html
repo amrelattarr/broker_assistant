@@ -1,5 +1,18 @@
 <div class="container mt-5">
-    <h2 class="text-center">All Stocks</h2>
+  <div class="container my-4">
+    <div class="row align-items-center">
+      <!-- Left side -->
+      <div class="col-md-6 text-md-start text-center">
+        <h2 class="fw-bold mb-0">All Stocks</h2>
+      </div>
+      <!-- Right side -->
+      <div class="col-md-6 text-md-end text-center">
+        <h3 class="text-success mb-0">Your Balance: <span class="fw-semibold">{{balance}}</span> EGB</h3>
+      </div>
+    </div>
+    <hr>
+  </div>
+  
     <table class="table table-striped">
       <thead>
         <tr>
@@ -10,7 +23,6 @@
           <th>Close</th>
           <th>Change</th>
           <th>Buy</th>
-          <th>Sell</th>
         </tr>
       </thead>
       <tbody>
@@ -23,7 +35,6 @@
                 <td>{{ stock.close }}</td>
                 <td>{{ stock.change }}</td>
                 <td><button class="btn btn-success">Buy</button></td>
-                <td><button class="btn btn-danger">Sell</button></td>
             </tr>
         }
         </tbody>

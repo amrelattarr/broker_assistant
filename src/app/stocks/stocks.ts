@@ -11,9 +11,20 @@ import { Istock } from '../shared/models/istock';
 export class Stocks implements OnInit{
   private readonly stock = inject(Stock)
 
-  stockList: Istock[] = []
+  stockList: Istock[] = [];
+  balance: number = 0;
 
   ngOnInit(): void {
+    const balance = localStorage.getItem('Balance');
+    if (balance) {
+      try {
+        this.balance = parseFloat(balance);
+      } catch (error) {
+        this.balance = 0;
+      }
+    } else {
+      this.balance = 0;
+    }
     this.getAllStocksData()
   }
 
