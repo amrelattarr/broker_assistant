@@ -23,15 +23,10 @@ export class BrokerService {
       
       // Get token from localStorage
       const token = localStorage.getItem('auth_token');
-      console.log('Retrieved token from localStorage:', token ? 'Token exists' : 'No token found');
-      
       if (!token) {
-        const error = new Error('No authentication token found. Please login again.');
-        console.error('Authentication error:', error.message);
-        return throwError(() => error);
+        throw new Error('No authentication token found. Please login again.');
       }
       
-      // Create headers with the token
       const headers = new HttpHeaders({
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/json',
@@ -40,27 +35,25 @@ export class BrokerService {
 
       const url = `${this.apiUrl}?message=${encodeURIComponent(message)}`;
       console.log('Sending request to:', url);
-      console.log('Request headers:', headers);
       
       return this.http.get<ChatBotResponse>(url, { 
-        headers: headers,
+        headers,
         withCredentials: true 
       }).pipe(
         catchError((error: HttpErrorResponse) => {
-          console.error('HTTP Error Details:', {
+          console.error('HTTP Error:', {
             status: error.status,
             statusText: error.statusText,
             error: error.error,
             message: error.message,
-            url: error.url,
-            headers: error.headers
+            url: error.url
           });
-          return throwError(() => error);
+          return throwError(() => error); // Re-throw to be handled by the component
         })
       );
     } catch (error) {
-      console.error('Unexpected error in askChatBot:', error);
-      return throwError(() => error);
+      console.error('Error in askChatBot:', error);
+      throw error;
     }
   }
 }
