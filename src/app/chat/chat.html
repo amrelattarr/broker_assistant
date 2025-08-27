@@ -15,6 +15,11 @@
           }
           <div class="message-text">
             {{ msg.text }}
+            @if (msg.isLink && msg.link) {
+              <div class="stocks-link">
+                <a [routerLink]="msg.link" class="stocks-button">{{ msg.linkText || 'View' }}</a>
+              </div>
+            }
           </div>
         </div>
       </div>
@@ -36,7 +41,7 @@
     }
   </div>
 
-  <div class="input-container fixed-bottom">
+  <div class="input-container">
     <input type="text"
            [(ngModel)]="userMessage"
            [disabled]="isLoading"

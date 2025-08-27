@@ -46,7 +46,7 @@ export class Login {
           localStorage.setItem('auth_token', res.token);
           localStorage.setItem('email', JSON.stringify(res.user.email));
           localStorage.setItem('username', JSON.stringify(res.user.username));
-          // localStorage.setItem('Balance', JSON.stringify(res.user.balance));
+          localStorage.setItem('Balance', JSON.stringify(res.user.balance));
 
         } catch {}
         Swal.fire({

@@ -1,20 +1,27 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { BrokerService, ChatBotResponse } from '../shared/services/broker';
 import { finalize, catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [FormsModule, NgClass],
+  imports: [FormsModule, NgClass, RouterModule],
   templateUrl: './chat.html',
   styleUrls: ['./chat.css']
 })
 export class Chat {
   userMessage: string = '';
   isLoading = false;
-  messages: { text: string; sender: 'user' | 'bot' }[] = [
+  messages: { 
+    text: string; 
+    sender: 'user' | 'bot';
+    isLink?: boolean;
+    link?: string;
+    linkText?: string;
+  }[] = [
     { text: "Hello! I'm your Capital Market Broker assistant. How can I help you?", sender: 'bot' }
   ];
 
@@ -71,6 +78,15 @@ export class Chat {
               sender: 'bot'
             });
           }
+          
+          // Add clickable stocks link after every response
+          this.messages.push({
+            text: '🔍 Explore more stocks',
+            isLink: true,
+            link: '/stocks',
+            linkText: 'View All Stocks',
+            sender: 'bot'
+          });
         }
       });
   }
