@@ -1,4 +1,4 @@
-﻿using BackEnd.Data;
+using BackEnd.Data;
 using BackEnd.DTOs;
 using BackEnd.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +15,7 @@ namespace BackEnd.Controllers
         private readonly AppDbContext _context;
         private readonly IConfiguration _config;
         private readonly HttpClient _httpClient;
+        private object stock;
 
         public ChatBotController(AppDbContext context, IConfiguration config)
         {
@@ -132,18 +133,18 @@ namespace BackEnd.Controllers
             try
             {
                 var content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync("https://api.openai.com/v1/chat/completions", content);
+                var httpResponse = await _httpClient.PostAsync("https://api.openai.com/v1/chat/completions", content);
 
-                if (!response.IsSuccessStatusCode)
+                if (!httpResponse.IsSuccessStatusCode)
                 {
-                    return StatusCode((int)response.StatusCode, new
+                    return StatusCode((int)httpResponse.StatusCode, new
                     {
                         error = "OpenAI API call failed",
-                        details = await response.Content.ReadAsStringAsync()
+                        details = await httpResponse.Content.ReadAsStringAsync()
                     });
                 }
 
-                using var responseStream = await response.Content.ReadAsStreamAsync();
+                using var responseStream = await httpResponse.Content.ReadAsStreamAsync();
                 using var doc = await JsonDocument.ParseAsync(responseStream);
 
                 string reply = "";
@@ -161,13 +162,46 @@ namespace BackEnd.Controllers
                     return StatusCode(500, new { error = "Failed to parse OpenAI response", raw = doc.RootElement.ToString() });
                 }
 
-                return Ok(new
+                // Create response dictionary
+                var response = new Dictionary<string, object>
                 {
-                    question = message,
-                    referenceUsed = dbReference,
-                    adviceGiven = advice,
-                    answer = reply
-                });
+                    ["question"] = message,
+                    ["referenceUsed"] = dbReference,
+                    ["adviceGiven"] = advice,
+                    ["answer"] = reply
+                };
+
+                // Add stockId if we have a stock symbol in the reference
+                if (!string.IsNullOrEmpty(dbReference) && dbReference.Contains("(") && dbReference.Contains(")"))
+                {
+                    try
+                    {
+                        // Extract the stock symbol from the reference (e.g., "(AIDC.CA)")
+                        int start = dbReference.IndexOf('(') + 1;
+                        int end = dbReference.IndexOf(')');
+                        if (start > 0 && end > start)
+                        {
+                            string symbol = dbReference.Substring(start, end - start);
+                            
+                            // Get the stock from database by symbol
+                            var stockFromDb = await _context.Stocks
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync(s => s.Symbol == symbol);
+                                
+                            if (stockFromDb != null)
+                            {
+                                response["stockId"] = stockFromDb.StockId;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the error but don't fail the request
+                        Console.WriteLine($"Error getting stock ID: {ex.Message}");
+                    }
+                }
+
+                return Ok(response);
             }
             catch (Exception ex)
             {

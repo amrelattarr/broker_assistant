@@ -4,7 +4,7 @@ namespace BackEnd.DTOs
     {
         public int UserId { get; set; }
         public int StockId { get; set; }
-        public int SellPrice { get; set; }
+        public decimal SellPrice { get; set; }
     }
 }
 

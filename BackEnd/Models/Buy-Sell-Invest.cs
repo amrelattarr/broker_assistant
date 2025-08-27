@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
 namespace BackEnd.Models
@@ -14,8 +14,8 @@ namespace BackEnd.Models
         [ForeignKey(nameof(Stock))]
         public int StockId { get; set; }
         public Stock? Stock { get; set; }
-        public int buyPrice { get; set; }
-        public int sellPrice { get; set; }
-        public int changeAmount { get; set; }
+        public decimal buyPrice { get; set; }
+        public decimal sellPrice { get; set; }
+        public decimal changeAmount { get; set; }
     }
 }

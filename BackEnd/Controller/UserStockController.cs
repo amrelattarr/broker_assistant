@@ -47,13 +47,21 @@ namespace BackEnd.Controllers
         {
             if (dto == null) return BadRequest("Invalid payload");
 
-            // Ensure user and stock exist (optional simple checks)
+            // Get user and stock with tracking
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == dto.UserId);
-            var stockExists = await _context.Stocks.AnyAsync(s => s.StockId == dto.StockId);
-            if (user == null || !stockExists) return NotFound("User or Stock not found");
+            var stock = await _context.Stocks.FirstOrDefaultAsync(s => s.StockId == dto.StockId);
+            
+            if (user == null || stock == null) 
+                return NotFound("User or Stock not found");
 
+            // Get the current stock value
+            var stockValue = stock.Value;
+
+            // Convert stock value to int (rounding to nearest integer for currency)
+            int stockValueInt = (int)Math.Round(stockValue, MidpointRounding.AwayFromZero);
+            
             // Balance check
-            if ((user.Balance ?? 0) < dto.BuyPrice)
+            if ((user.Balance ?? 0) < stockValueInt)
             {
                 return BadRequest("Insufficient balance");
             }
@@ -65,7 +73,7 @@ namespace BackEnd.Controllers
                 {
                     UserId = dto.UserId,
                     StockId = dto.StockId,
-                    buyPrice = dto.BuyPrice,
+                    buyPrice = stockValueInt,  // Use the rounded integer value
                     sellPrice = 0,
                     changeAmount = 0
                 };
@@ -73,17 +81,23 @@ namespace BackEnd.Controllers
             }
             else
             {
-                entity.buyPrice = dto.BuyPrice;
+                entity.buyPrice = stockValue;  // Update to current stock value
                 // Reset sell and change when buying again
                 entity.sellPrice = 0;
                 entity.changeAmount = 0;
             }
 
-            // Deduct balance
-            user.Balance = (user.Balance ?? 0) - dto.BuyPrice;
+            // Deduct the stock's current value from user's balance (converted to int)
+            user.Balance = (user.Balance ?? 0) - stockValueInt;
 
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Bought successfully", userId = dto.UserId, stockId = dto.StockId, buyPrice = dto.BuyPrice });
+            return Ok(new { 
+                message = "Bought successfully", 
+                userId = dto.UserId, 
+                stockId = dto.StockId, 
+                buyPrice = stockValueInt,
+                remainingBalance = user.Balance
+            });
         }
 
         // POST: api/UserStock/sell
@@ -98,18 +112,27 @@ namespace BackEnd.Controllers
                 return NotFound("No existing position to sell");
             }
 
-            entity.sellPrice = dto.SellPrice;
-            entity.changeAmount = dto.SellPrice - entity.buyPrice;
+            // Convert SellPrice to int (rounding to nearest integer for currency)
+            int sellPriceInt = (int)Math.Round(dto.SellPrice, MidpointRounding.AwayFromZero);
+            
+            entity.sellPrice = sellPriceInt;
+            entity.changeAmount = sellPriceInt - entity.buyPrice;
 
             // Increase user balance
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == dto.UserId);
             if (user != null)
             {
-                user.Balance = (user.Balance ?? 0) + dto.SellPrice;
+                user.Balance = (user.Balance ?? 0) + sellPriceInt;
             }
 
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Sold successfully", userId = dto.UserId, stockId = dto.StockId, sellPrice = dto.SellPrice, changeAmount = entity.changeAmount });
+            return Ok(new { 
+                message = "Sold successfully", 
+                userId = dto.UserId, 
+                stockId = dto.StockId, 
+                sellPrice = sellPriceInt, 
+                changeAmount = entity.changeAmount 
+            });
         }
     }
 }
