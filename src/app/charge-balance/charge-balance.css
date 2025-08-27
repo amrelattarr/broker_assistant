@@ -1,0 +1,94 @@
+/* Main container */
+:host {
+  display: block;
+  min-height: calc(100vh - 56px);
+  background-color: #f8f9fa;
+}
+
+/* Card styling */
+.card {
+  border: none;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+  padding: 1.5rem;
+  border-bottom: none;
+}
+
+/* Form styling */
+.form-control, .input-group-text {
+  height: 3.5rem;
+  font-size: 1.1rem;
+}
+
+.form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+.input-group-text {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* Balance display */
+.current-balance {
+  text-align: center;
+  padding: 1.5rem 0;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.current-balance h5 {
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+}
+
+/* Button styling */
+.btn-primary {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .current-balance {
+    padding: 1rem 0;
+  }
+  
+  .current-balance .display-4 {
+    font-size: 2.5rem;
+  }
+  
+  .form-control, .input-group-text {
+    height: 3rem;
+    font-size: 1rem;
+  }
+}

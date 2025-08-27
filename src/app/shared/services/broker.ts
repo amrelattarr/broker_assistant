@@ -7,6 +7,7 @@ export interface ChatBotResponse {
   referenceUsed: string;
   adviceGiven: string;
   answer: string;
+  stockId?: number;
 }
 
 @Injectable({

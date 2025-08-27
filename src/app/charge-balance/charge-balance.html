@@ -1,0 +1,60 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Charge Your Balance</h4>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="chargeForm" (ngSubmit)="onSubmit()" novalidate>
+            <div class="mb-3">
+              <label for="amount" class="form-label">Amount to Add (EGP)</label>
+              <div class="input-group">
+                <input 
+                  type="number" 
+                  class="form-control form-control-lg" 
+                  id="amount"
+                  formControlName="amount"
+                  placeholder="Enter amount"
+                  [class.is-invalid]="amount?.invalid && (amount?.dirty || amount?.touched)"
+                >
+                <span class="input-group-text">EGP</span>
+                
+                <div *ngIf="amount?.invalid && (amount?.dirty || amount?.touched)" class="invalid-feedback d-block">
+                  <div *ngIf="amount?.errors?.['required']">Amount is required</div>
+                  <div *ngIf="amount?.errors?.['min']">Minimum amount is 1 EGP</div>
+                  <div *ngIf="amount?.errors?.['max']">Maximum amount is 10,000 EGP</div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+              {{ errorMessage }}
+            </div>
+
+            <div *ngIf="successMessage" class="alert alert-success" role="alert">
+              <i class="bi bi-check-circle me-2"></i>
+              {{ successMessage }}
+            </div>
+
+            <div class="d-grid gap-2">
+              <button 
+                type="submit" 
+                class="btn btn-primary btn-lg"
+                [disabled]="chargeForm.invalid || isSubmitting"
+              >
+                <span *ngIf="!isSubmitting">
+                  <i class="bi bi-plus-circle me-2"></i>Add Funds
+                </span>
+                <span *ngIf="isSubmitting" class="d-flex align-items-center justify-content-center">
+                  <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Processing...
+                </span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

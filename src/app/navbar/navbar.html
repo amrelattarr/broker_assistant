@@ -19,6 +19,9 @@
       <li class="pt-2"><a routerLink="stocks">Stocks</a></li>
     }
     @if (!hideButton()) {
+      <li class="pt-2"><a routerLink="charge">Charge</a></li>
+    }
+    @if (!hideButton()) {
       <li><button class="btn btn-danger" (click)="logout()">Logout</button></li>
     }
   </ul>

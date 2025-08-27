@@ -56,6 +56,10 @@ export class Chat {
           if (!response) return; // Handle case where error was caught
           
           console.log('API Response:', response);
+          // Store stockId in local storage if it exists in the response
+          if (response.stockId) {
+            localStorage.setItem('highlightedStockId', response.stockId.toString());
+          }
           
           // Add bot's response to chat
           this.messages.push({ 
