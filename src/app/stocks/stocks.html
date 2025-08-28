@@ -28,6 +28,7 @@
     <table class="table table-hover align-middle">
       <thead class="table-light">
         <tr>
+          <th scope="col" class="ps-4">Stock ID</th>
           <th scope="col" class="ps-4">Company</th>
           <th scope="col" class="text-end">Value</th>
           <th scope="col" class="text-center">Symbol</th>
@@ -40,6 +41,7 @@
       <tbody class="table-group-divider">
         @for (stock of stockList; track stock.stockId) {
           <tr [class.highlighted]="stock.stockId === highlightedStockId" class="position-relative" #stockRow>
+            <td class="ps-4 fw-medium">{{ stock.stockId }}</td>
             <td class="ps-4 fw-medium">{{ stock.englishName }}</td>
             <td class="text-end">{{ stock.value | number:'1.2-2' }}</td>
             <td class="text-center">
