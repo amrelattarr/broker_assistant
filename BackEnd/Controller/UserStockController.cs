@@ -1,11 +1,14 @@
+using System.Security.Claims;
 using BackEnd.Data;
 using BackEnd.DTOs;
 using BackEnd.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UserStockController : ControllerBase
@@ -41,14 +44,26 @@ namespace BackEnd.Controllers
             return Ok(positions);
         }
 
+        private int GetUserIdFromToken()
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            {
+                throw new UnauthorizedAccessException("Invalid user ID in token");
+            }
+            return userId;
+        }
+
         // POST: api/UserStock/buy
         [HttpPost("buy")]
         public async Task<IActionResult> Buy([FromBody] BuyStockDto dto)
         {
             if (dto == null) return BadRequest("Invalid payload");
 
+            int userId = GetUserIdFromToken();
+
             // Get user and stock with tracking
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == dto.UserId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             var stock = await _context.Stocks.FirstOrDefaultAsync(s => s.StockId == dto.StockId);
             
             if (user == null || stock == null) 
@@ -66,12 +81,12 @@ namespace BackEnd.Controllers
                 return BadRequest("Insufficient balance");
             }
 
-            var entity = await _context.BuySellInvests.FindAsync(dto.UserId, dto.StockId);
+            var entity = await _context.BuySellInvests.FindAsync(userId, dto.StockId);
             if (entity == null)
             {
                 entity = new Buy_Sell_Invest
                 {
-                    UserId = dto.UserId,
+                    UserId = userId,
                     StockId = dto.StockId,
                     buyPrice = stockValueInt,  // Use the rounded integer value
                     sellPrice = 0,
@@ -93,7 +108,7 @@ namespace BackEnd.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { 
                 message = "Bought successfully", 
-                userId = dto.UserId, 
+                userId = userId, 
                 stockId = dto.StockId, 
                 buyPrice = stockValueInt,
                 remainingBalance = user.Balance
@@ -106,32 +121,30 @@ namespace BackEnd.Controllers
         {
             if (dto == null) return BadRequest("Invalid payload");
 
-            var entity = await _context.BuySellInvests.FindAsync(dto.UserId, dto.StockId);
+            int userId = GetUserIdFromToken();
+
+            var entity = await _context.BuySellInvests.FindAsync(userId, dto.StockId);
             if (entity == null)
             {
                 return NotFound("No existing position to sell");
             }
 
-            // Convert SellPrice to int (rounding to nearest integer for currency)
-            int sellPriceInt = (int)Math.Round(dto.SellPrice, MidpointRounding.AwayFromZero);
+            // Set the target sell price and activate the sell order
+            entity.TargetSellPrice = dto.TargetSellPrice;
+            entity.IsSellOrderActive = true;
             
-            entity.sellPrice = sellPriceInt;
-            entity.changeAmount = sellPriceInt - entity.buyPrice;
-
-            // Increase user balance
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == dto.UserId);
-            if (user != null)
-            {
-                user.Balance = (user.Balance ?? 0) + sellPriceInt;
-            }
+            // Reset the actual sell price since we haven't sold yet
+            entity.sellPrice = 0;
+            entity.changeAmount = 0;
 
             await _context.SaveChangesAsync();
+            
             return Ok(new { 
-                message = "Sold successfully", 
-                userId = dto.UserId, 
-                stockId = dto.StockId, 
-                sellPrice = sellPriceInt, 
-                changeAmount = entity.changeAmount 
+                message = "Sell order created successfully. The stock will be sold automatically when the price reaches " + dto.TargetSellPrice,
+                userId = userId, 
+                stockId = dto.StockId,
+                targetSellPrice = dto.TargetSellPrice,
+                isSellOrderActive = true
             });
         }
     }

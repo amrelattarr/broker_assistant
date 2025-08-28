@@ -12,6 +12,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using System.Security.Cryptography;
+using BackEnd.Services;
 
 public class Program
 {
@@ -49,6 +50,9 @@ public class Startup
         services.AddScoped<Register>();
         services.AddScoped<Login>();
         services.AddSingleton<ITokenService, TokenService>();
+        
+        // Register background service for processing sell orders
+        services.AddHostedService<StockSellOrderService>();
 
         // ✅ CORS setup for Angular frontend
         services.AddCors(options =>

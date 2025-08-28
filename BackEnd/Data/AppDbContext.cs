@@ -1,4 +1,4 @@
-﻿using BackEnd.Models;
+using BackEnd.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Data
@@ -39,6 +39,45 @@ namespace BackEnd.Data
                 .HasOne(b => b.Stock)
                 .WithMany(s => s.BuySellInvests)
                 .HasForeignKey(b => b.StockId);
+
+            // Configure decimal precision for Buy_Sell_Invest
+            modelBuilder.Entity<Buy_Sell_Invest>()
+                .Property(b => b.TargetSellPrice)
+                .HasPrecision(18, 2);
+                
+            modelBuilder.Entity<Buy_Sell_Invest>()
+                .Property(b => b.buyPrice)
+                .HasPrecision(18, 2);
+                
+            modelBuilder.Entity<Buy_Sell_Invest>()
+                .Property(b => b.sellPrice)
+                .HasPrecision(18, 2);
+                
+            modelBuilder.Entity<Buy_Sell_Invest>()
+                .Property(b => b.changeAmount)
+                .HasPrecision(18, 2);
+                
+            // Configure decimal precision for Egx30
+            modelBuilder.Entity<Egx30>()
+                .Property(e => e.IndexValue)
+                .HasPrecision(18, 2);
+                
+            // Configure decimal precision for Stock
+            modelBuilder.Entity<Stock>()
+                .Property(s => s.Change)
+                .HasPrecision(18, 2);
+                
+            modelBuilder.Entity<Stock>()
+                .Property(s => s.Close)
+                .HasPrecision(18, 2);
+                
+            modelBuilder.Entity<Stock>()
+                .Property(s => s.Open)
+                .HasPrecision(18, 2);
+                
+            modelBuilder.Entity<Stock>()
+                .Property(s => s.Value)
+                .HasPrecision(18, 2);
 
             // SendMessage composite key
             modelBuilder.Entity<SendMessage>()

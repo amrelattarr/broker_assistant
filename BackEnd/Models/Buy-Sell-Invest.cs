@@ -17,5 +17,9 @@ namespace BackEnd.Models
         public decimal buyPrice { get; set; }
         public decimal sellPrice { get; set; }
         public decimal changeAmount { get; set; }
+        
+        // New fields for target sell price functionality
+        public decimal? TargetSellPrice { get; set; }
+        public bool IsSellOrderActive { get; set; } = false;
     }
 }
