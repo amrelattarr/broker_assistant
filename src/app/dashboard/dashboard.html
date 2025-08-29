@@ -1,10 +1,10 @@
 <section>
   <div class="container py-4">
     <div class="text-center p-4">
-      <h1 class="display-5 fw-bold text-primary">
+      <h1 class="display-5 text-primary">
         Your Smart Trading Assistant
       </h1>
-      <p class="fs-5 text-secondary fst-italic mt-3">
+      <p class="fs-5 text-secondary fst-italic">
         Helping You Navigate the Market with Confidence
       </p>
     </div>
@@ -65,6 +65,73 @@
               <button class="btn btn-primary mt-2" (click)="loadChartData()">
                 <i class="bi bi-arrow-repeat me-1"></i> Try Again
               </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="display-6 mb-3 mb-md-0">Purchased Stocks</h5>
+              <button class="btn btn-sm btn-outline-primary" (click)="loadPurchasedStocks()" [disabled]="isLoadingPurchased">
+                <span *ngIf="!isLoadingPurchased">Refresh</span>
+                <span *ngIf="isLoadingPurchased" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              </button>
+            </div>
+
+            <p class="card-text text-muted mb-3">
+              <span class="me-2">Available Balance:</span>
+              <strong class="text-success">{{ balance }} EGP</strong>
+            </p>
+
+            <div *ngIf="isLoadingPurchased" class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-2 mb-0">Loading your stocks...</p>
+            </div>
+
+            <div *ngIf="purchasedError && !isLoadingPurchased" class="alert alert-danger" role="alert">
+              {{ purchasedError }}
+            </div>
+
+            <div class="table-responsive" *ngIf="!isLoadingPurchased && !purchasedError">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col" class="ps-4">Stock ID</th>
+                    <th scope="col" class="ps-4">Company</th>
+                    <th scope="col" class="text-end">Value</th>
+                    <th scope="col" class="text-center">Symbol</th>
+                    <th scope="col" class="text-center">Status</th>
+                    <th scope="col" class="text-end pe-4">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                  <tr *ngIf="purchasedStocks.length === 0">
+                    <td colspan="5" class="text-center text-muted py-4">You have not bought any stocks yet.</td>
+                  </tr>
+                  <tr *ngFor="let s of purchasedStocks">
+                    <td class="ps-4 fw-medium">{{ s.stockId }}</td>
+                    <td class="ps-4 fw-medium">{{ s.englishName }}</td>
+                    <td class="text-end">{{ s.value | number:'1.2-2' }}</td>
+                    <td class="text-center">
+                      <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">{{ s.symbol }}</span>
+                    </td>
+                    <td class="text-center">
+                      <div class="btn-group btn-group-sm" role="group">
+                        <button class="btn btn-secondary px-3" disabled>Owned</button>
+                      </div>
+                    </td>
+                    <td class="text-end pe-4 "> 
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-sm btn-outline-danger px-3" (click)="onSell(s.stockId)">Sell</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

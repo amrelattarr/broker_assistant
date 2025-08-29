@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { ChartsData, Egx30Dto } from '../shared/services/charts-data';
-import { inject } from '@angular/core';
 import 'chartjs-chart-financial';
 import { NgChartsModule } from 'ng2-charts';
 import { CommonModule } from '@angular/common';
+import { Balance } from '../shared/services/balance';
+import { BuyStockService } from '../shared/services/buy-stock';
 
 interface ChartData {
   labels: string[];
@@ -38,9 +39,17 @@ const DEFAULT_CHART_DATA: ChartData = {
 })
 export class Dashboard implements OnInit {
   public chartsData = inject(ChartsData);
+  private readonly balanceService = inject(Balance);
+  private readonly buyStockService = inject(BuyStockService);
   public chartData: ChartData = DEFAULT_CHART_DATA;
   public isLoading = true;
   public error: string | null = null;
+  public balance: number = 0;
+
+  // Purchased stocks section
+  public isLoadingPurchased = true;
+  public purchasedError: string | null = null;
+  public purchasedStocks: any[] = [];
 
   // Chart options
   public lineChartOptions = {
@@ -154,6 +163,7 @@ export class Dashboard implements OnInit {
 
   ngOnInit() {
     this.loadChartData();
+    this.loadPurchasedStocks();
   }
 
   loadChartData() {
@@ -171,6 +181,42 @@ export class Dashboard implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  loadPurchasedStocks() {
+    this.isLoadingPurchased = true;
+    this.purchasedError = null;
+    this.purchasedStocks = [];
+
+    this.balanceService.getBalance().subscribe({
+      next: (res) => {
+        const userId = (res as any).userId as number | undefined;
+        this.balance = (res as any).balance as number | 0;
+        if (!userId) {
+          this.isLoadingPurchased = false;
+          this.purchasedError = 'Unable to determine user.';
+          return;
+        }
+        this.buyStockService.getUserStocks(userId).subscribe({
+          next: (userStocks) => {
+            this.purchasedStocks = Array.isArray(userStocks) ? userStocks : [];
+            this.isLoadingPurchased = false;
+          },
+          error: () => {
+            this.purchasedError = 'Failed to load your stocks.';
+            this.isLoadingPurchased = false;
+          }
+        });
+      },
+      error: () => {
+        this.purchasedError = 'Failed to verify user.';
+        this.isLoadingPurchased = false;
+      }
+    });
+  }
+
+  onSell(stockId: number) {
+    // No functionality yet; placeholder for future implementation
   }
 
   // Calculate daily statistics
