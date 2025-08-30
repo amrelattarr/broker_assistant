@@ -10,6 +10,8 @@ namespace BackEnd.DTOs
         public decimal BuyPrice { get; set; }
         public decimal SellPrice { get; set; }
         public decimal ChangeAmount { get; set; }
+        public bool IsSellOrderActive { get; set; }
+        public decimal? TargetSellPrice { get; set; }
     }
 }
 

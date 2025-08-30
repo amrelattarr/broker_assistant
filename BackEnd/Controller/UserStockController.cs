@@ -20,6 +20,37 @@ namespace BackEnd.Controllers
             _context = context;
         }
 
+        // GET: api/UserStock/stock/{userId}/{stockId}
+        [HttpGet("stock/{userId:int}/{stockId:int}")]
+        public async Task<IActionResult> GetUserStock(int userId, int stockId)
+        {
+            var position = await _context.BuySellInvests
+                .AsNoTracking()
+                .Where(p => p.UserId == userId && p.StockId == stockId)
+                .Include(p => p.Stock)
+                .Select(p => new UserStockPositionDto
+                {
+                    UserId = p.UserId,
+                    StockId = p.StockId,
+                    EnglishName = p.Stock != null ? p.Stock.EnglishName : null,
+                    Symbol = p.Stock != null ? p.Stock.Symbol : null,
+                    CurrentValue = p.Stock != null ? p.Stock.Value : 0,
+                    BuyPrice = p.buyPrice,
+                    SellPrice = p.sellPrice,
+                    ChangeAmount = p.changeAmount,
+                    TargetSellPrice = p.TargetSellPrice,
+                    IsSellOrderActive = p.IsSellOrderActive
+                })
+                .FirstOrDefaultAsync();
+
+            if (position == null)
+            {
+                return NotFound("Stock not found for this user");
+            }
+
+            return Ok(position);
+        }
+
         // GET: api/UserStock/{userId}
         [HttpGet("{userId:int}")]
         public async Task<IActionResult> GetUserPositions(int userId)
