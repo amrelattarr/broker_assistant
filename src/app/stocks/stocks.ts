@@ -5,6 +5,7 @@ import { DecimalPipe, NgClass, NgIf } from '@angular/common';
 import { Balance } from '../shared/services/balance';
 import { Subscription } from 'rxjs';
 import { BuyStockService } from '../shared/services/buy-stock';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-stocks',
@@ -35,17 +36,41 @@ export class Stocks implements OnInit, AfterViewInit {
     this.restoreBoughtStateFromServer();
   }
 
-  onBuy(stockId: number): void {
+  async onBuy(stockId: number, stockName: string): Promise<void> {
     if (this.buyingStockIds.has(stockId) || this.boughtStockIds.has(stockId)) return;
+    
+    const result = await Swal.fire({
+      title: 'Confirm Purchase',
+      text: `Are you sure you want to buy ${stockName}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, buy it!',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (!result.isConfirmed) return;
+    
     this.buyingStockIds.add(stockId);
     this.buyStockService.buyStock(stockId).subscribe({
       next: () => {
         this.buyingStockIds.delete(stockId);
         this.boughtStockIds.add(stockId);
         this.loadBalance();
+        Swal.fire(
+          'Purchased!',
+          `You have successfully purchased ${stockName}.`,
+          'success'
+        );
       },
-      error: () => {
+      error: (error) => {
         this.buyingStockIds.delete(stockId);
+        Swal.fire(
+          'Error!',
+          'There was an error processing your purchase. Please try again.',
+          'error'
+        );
       }
     });
   }

@@ -1,10 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { ChartsData, Egx30Dto } from '../shared/services/charts-data';
+import { Router, RouterModule } from '@angular/router';
+import { ChartsData } from '../shared/services/charts-data';
 import 'chartjs-chart-financial';
 import { NgChartsModule } from 'ng2-charts';
 import { CommonModule } from '@angular/common';
 import { Balance } from '../shared/services/balance';
 import { BuyStockService } from '../shared/services/buy-stock';
+import { SingleStockService, StockDetails } from '../shared/services/single-stock.service';
 
 interface ChartData {
   labels: string[];
@@ -33,14 +35,16 @@ const DEFAULT_CHART_DATA: ChartData = {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [NgChartsModule, CommonModule],
+  imports: [NgChartsModule, CommonModule, RouterModule],
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.css'
+  styleUrl: './dashboard.css',
+  // No need to provide SingleStockService here as it's already providedIn: 'root'
 })
 export class Dashboard implements OnInit {
   public chartsData = inject(ChartsData);
   private readonly balanceService = inject(Balance);
   private readonly buyStockService = inject(BuyStockService);
+  private router = inject(Router);
   public chartData: ChartData = DEFAULT_CHART_DATA;
   public isLoading = true;
   public error: string | null = null;
@@ -49,7 +53,16 @@ export class Dashboard implements OnInit {
   // Purchased stocks section
   public isLoadingPurchased = true;
   public purchasedError: string | null = null;
-  public purchasedStocks: any[] = [];
+  public purchasedStocks: Array<{
+    stockId: number;
+    englishName: string;
+    value: number;
+    symbol: string;
+    targetSellPrice?: number | null;
+    loading?: boolean;
+    isSellOrderActive?: boolean;
+    buyPrice: number;
+  }> = [];
 
   // Chart options
   public lineChartOptions = {
@@ -161,7 +174,13 @@ export class Dashboard implements OnInit {
     }
   };
 
+  private singleStockService = inject(SingleStockService);
+  private currentUserId: number | null = null;
+
+  constructor() {}
+
   ngOnInit() {
+    console.log('Dashboard component initialized');
     this.loadChartData();
     this.loadPurchasedStocks();
   }
@@ -197,12 +216,28 @@ export class Dashboard implements OnInit {
           this.purchasedError = 'Unable to determine user.';
           return;
         }
+        this.currentUserId = userId;
+        console.log('Fetching user stocks...');
         this.buyStockService.getUserStocks(userId).subscribe({
           next: (userStocks) => {
+            console.log('Received user stocks:', userStocks);
             this.purchasedStocks = Array.isArray(userStocks) ? userStocks : [];
+            console.log('Processed purchased stocks:', this.purchasedStocks);
             this.isLoadingPurchased = false;
+            
+            if (this.purchasedStocks.length > 0) {
+              console.log('Loading sell prices for', this.purchasedStocks.length, 'stocks');
+              // Load target sell prices for each stock
+              this.purchasedStocks.forEach((stock, index) => {
+                console.log('Loading sell price for stock:', stock.stockId, 'at index:', index);
+                this.loadStockSellPrice(stock.stockId, index);
+              });
+            } else {
+              console.log('No stocks to load prices for');
+            }
           },
-          error: () => {
+          error: (error) => {
+            console.error('Error loading user stocks:', error);
             this.purchasedError = 'Failed to load your stocks.';
             this.isLoadingPurchased = false;
           }
@@ -215,8 +250,52 @@ export class Dashboard implements OnInit {
     });
   }
 
-  onSell(stockId: number) {
-    // No functionality yet; placeholder for future implementation
+  private loadStockSellPrice(stockId: number, index: number) {
+    if (!this.currentUserId) return;
+    
+    try {
+      // Set loading state
+      this.purchasedStocks[index] = {
+        ...this.purchasedStocks[index],
+        loading: true
+      };
+      
+      this.singleStockService.getStockDetails(this.currentUserId, stockId).subscribe({
+        next: (stockDetails: StockDetails) => {
+          console.log('Received stock details:', stockDetails);
+          if (this.purchasedStocks[index]) {
+            this.purchasedStocks[index] = {
+              ...this.purchasedStocks[index],
+              targetSellPrice: stockDetails.targetSellPrice,
+              isSellOrderActive: stockDetails.isSellOrderActive,
+              loading: false
+            };
+            console.log('Updated stock in UI:', this.purchasedStocks[index]);
+          }
+        },
+        error: (error) => {
+          console.error('Error loading stock details:', error);
+          if (this.purchasedStocks[index]) {
+            this.purchasedStocks[index] = {
+              ...this.purchasedStocks[index],
+              loading: false
+            };
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error in loadStockSellPrice:', error);
+      if (this.purchasedStocks[index]) {
+        this.purchasedStocks[index] = {
+          ...this.purchasedStocks[index],
+          loading: false
+        };
+      }
+    }
+  }
+
+  public onSell(stockId: number): void {
+    this.router.navigate(['/stocks/sell', stockId]);
   }
 
   // Calculate daily statistics

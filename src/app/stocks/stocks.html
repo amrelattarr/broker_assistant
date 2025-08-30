@@ -61,7 +61,7 @@
                         'btn-secondary': boughtStockIds.has(stock.stockId)
                       }"
                       [disabled]="buyingStockIds.has(stock.stockId) || boughtStockIds.has(stock.stockId)"
-                      (click)="onBuy(stock.stockId)">
+                      (click)="onBuy(stock.stockId, stock.englishName)">
                 <i class="bi bi-cart-plus me-1" *ngIf="!boughtStockIds.has(stock.stockId)"></i>
                 {{ boughtStockIds.has(stock.stockId) ? 'Bought' : 'Buy' }}
               </button>

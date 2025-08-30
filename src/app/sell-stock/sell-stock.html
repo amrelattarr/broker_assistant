@@ -1,0 +1,48 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Sell Stock</h4>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="onSubmit()" #sellForm="ngForm">
+            <div class="mb-3">
+              <label for="targetPrice" class="form-label">Target Sell Price</label>
+              <input 
+                type="number" 
+                class="form-control" 
+                id="targetPrice" 
+                name="targetPrice" 
+                [(ngModel)]="targetPrice" 
+                step="0.01"
+                min="0.01"
+                required
+                #priceInput="ngModel">
+              <div *ngIf="priceInput.invalid && (priceInput.dirty || priceInput.touched)" class="text-danger">
+                <div *ngIf="priceInput.errors?.['required']">Target price is required</div>
+                <div *ngIf="priceInput.errors?.['min']">Price must be greater than 0</div>
+              </div>
+            </div>
+            
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="!sellForm.form.valid || isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                {{ isLoading ? 'Processing...' : 'Sell Stock' }}
+              </button>
+              <button type="button" class="btn btn-outline-secondary" (click)="goBack()">Cancel</button>
+            </div>
+          </form>
+          
+          <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+            {{ errorMessage }}
+          </div>
+          
+          <div *ngIf="successMessage" class="alert alert-success mt-3">
+            {{ successMessage }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -102,10 +102,10 @@
                   <tr>
                     <th scope="col" class="ps-4">Stock ID</th>
                     <th scope="col" class="ps-4">Company</th>
-                    <th scope="col" class="text-end">Value</th>
+                    <th scope="col" class="text-end">Buy Value</th>
                     <th scope="col" class="text-center">Symbol</th>
                     <th scope="col" class="text-center">Status</th>
-                    <th scope="col" class="text-end pe-4">Action</th>
+                    <th scope="col" class="text-end pe-4">Target Sell Price</th>
                   </tr>
                 </thead>
                 <tbody class="table-group-divider">
@@ -115,7 +115,7 @@
                   <tr *ngFor="let s of purchasedStocks">
                     <td class="ps-4 fw-medium">{{ s.stockId }}</td>
                     <td class="ps-4 fw-medium">{{ s.englishName }}</td>
-                    <td class="text-end">{{ s.value | number:'1.2-2' }}</td>
+                    <td class="text-end">{{ s.buyPrice| number:'1.2-2' }}</td>
                     <td class="text-center">
                       <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">{{ s.symbol }}</span>
                     </td>
@@ -124,9 +124,24 @@
                         <button class="btn btn-secondary px-3" disabled>Owned</button>
                       </div>
                     </td>
-                    <td class="text-end pe-4 "> 
-                      <div class="btn-group btn-group-sm">
-                        <button class="btn btn-sm btn-outline-danger px-3" (click)="onSell(s.stockId)">Sell</button>
+                    <td class="text-end pe-4">
+                      <div>
+                        <ng-container *ngIf="s.loading">
+                          <span class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </span>
+                        </ng-container>
+                        <ng-container *ngIf="!s.loading">
+                          <ng-container *ngIf="s.targetSellPrice === null || s.targetSellPrice === undefined; else showTargetPrice">
+                            <button class="btn btn-sm btn-outline-danger px-3" (click)="onSell(s.stockId)">Sell</button>
+                          </ng-container>
+                          <ng-template #showTargetPrice>
+                            <div class="d-flex flex-column">
+                              <span class="text-muted small">Selling at:</span>
+                              <span class="fw-bold">{{ s.targetSellPrice | number:'1.2-2' }} EGB</span>
+                            </div>
+                          </ng-template>
+                        </ng-container>
                       </div>
                     </td>
                   </tr>

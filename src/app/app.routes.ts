@@ -8,6 +8,7 @@ import { authGuard } from './shared/guards/auth.guard';
 import { guestGuard } from './shared/guards/guest.guard';
 import { Stocks } from './stocks/stocks';
 import { ChargeBalance } from './charge-balance/charge-balance';
+import { SellStockComponent } from './sell-stock/sell-stock';
 
 export const routes: Routes = [
     {path:'' , component:Login, canActivate:[guestGuard]},
@@ -16,6 +17,7 @@ export const routes: Routes = [
     {path:'home' , component:Dashboard, canActivate:[authGuard]},
     {path:'chat' , component:Chat, canActivate:[authGuard]},
     {path:'stocks', component:Stocks, canActivate:[authGuard]},
+    {path:'stocks/sell/:id', component:SellStockComponent, canActivate:[authGuard]},
     {path:'charge', component:ChargeBalance, canActivate:[authGuard]},
     {path:'**' , component:NotFound}
     
